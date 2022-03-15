@@ -337,9 +337,9 @@ class ValidateEmailSendOTP(APIView):
                     otp=key,
                 )
             message = f"""
-                        Subject: Hi there
+                        Verify Email Address
 
-                        login otp is : {key}."""
+                        Verify OTP is : {key}."""
             email_send(old.email, message)
             status_code = HTTPStatus.OK
             response = {
@@ -442,9 +442,9 @@ class ForgotPasswordSendOTP(APIView):
                             otp=key,
                         )
                     message = f"""
-                                Subject: Forgot Password
+                                Forgot Password
 
-                                Forgot Password otp is : {key}."""
+                                Forgot Password OTP is : {key}."""
                     email_send(old.email, message)
                     status_code = HTTPStatus.OK
                     response = {
