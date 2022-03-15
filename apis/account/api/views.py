@@ -632,3 +632,4 @@ class LoginValidateOTP(APIView):
                 'message': 'Please enter a valid OTP',
             }
             return Response(response, status_code)
+
