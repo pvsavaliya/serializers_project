@@ -1,4 +1,6 @@
-from tkinter import Image
+from distutils.text_file import TextFile
+from pyexpat import model
+from tkinter import CASCADE, Image
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.forms import PasswordInput
@@ -24,9 +26,9 @@ class UserDetail(AbstractUser):
     useraddress     = models.CharField(max_length=200, null=True,blank=True)
     password        = models.CharField(max_length=255, null=False)
     isDeleted       = models.BooleanField(default = False,null=True)
-    Image           = models.FileField(upload_to='message/%Y/%m/%d/', null=True, blank=True)
     Token           = models.TextField(null=True)
-    # otp             = models.CharField(max_length=6)
+    Image           = models.FileField(upload_to='message/%Y/%m/%d/', null=True, blank=True)
+    # comment         = models.ManyToManyField(Comment ) 
     USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = ['username']
 
@@ -39,6 +41,17 @@ class EmailOTP(models.Model):
     count = models.IntegerField(default=0)
     validated = models.BooleanField(default= False)
     otp_session_id = models.CharField(max_length=120, null=True, default = "")
-    
+
+class Comment(models.Model):
+    userID  = models.AutoField(primary_key=True, unique=True)
+    comment = models.TextField()
+    user = models.ForeignKey(UserDetail, on_delete = models.CASCADE, related_name="user_id")
+    created         = models.DateField(auto_now_add=True)
+    updated         = models.DateField(auto_now=True)
+    isDeleted       = models.BooleanField(default = False,null=True)
     def __str__(self):
-        return str(self.email) + ' is sent ' + str(self.otp)
+        return str(self.user_id) 
+
+class tag(models.Model):
+    tag = models.ManyToManyField(UserDetail)
+    text = models.CharField(max_length=100)

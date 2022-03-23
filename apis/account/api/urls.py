@@ -1,17 +1,5 @@
 from django.urls import path,path
-from apis.account.api.views import (ForgotPasswordVerifyOTP,
-                                    ChangePasswordView,
-                                    UserLoginApi,
-                                    AccountDataApiView,
-                                    UserRegisterApi,
-                                    UserListApi,
-                                    UserUpdateApi,
-                                    UserDeleteApi ,
-                                    ValidateEmailSendOTP,
-                                    ValidateOTP,
-                                    ForgotPasswordSendOTP,
-                                    LoginValidateOTP,
-                                    LogInEmailSendOTP)
+from apis.account.api.views import *
 from apis.data.api import views
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -41,5 +29,11 @@ urlpatterns = [
 
     path('api/', TokenObtainPairView.as_view()),
     path('refresh/', TokenRefreshView.as_view()),
+
+    path('addcomment/',AddCommentsApi.as_view()),
+    path('comment/<int:pk>/', UserCommentAPI.as_view()),
+  
+    path('tag/<int:pk>/', TagDataApi.as_view()),
+    path('addtag/', AddTagApi.as_view())
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

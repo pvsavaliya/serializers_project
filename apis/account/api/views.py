@@ -1,4 +1,5 @@
 from email.policy import default
+import pdb
 import smtplib,ssl
 import random
 from .serializers import *
@@ -60,6 +61,65 @@ class UserRegisterApi(generics.CreateAPIView):
                 'status_code': HTTPStatus.BAD_REQUEST,
                 'message': 'Please, enter valid data',
                 'error': str(exc),
+            }
+        return Response(response, status=status_code)
+
+
+class AddCommentsApi(generics.CreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = AddCommentserializers
+
+    def post(self, request, *args, **kwargs):
+
+        import pdb
+        # pdb.set_trace()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # print(request.data.userID)
+        serializer.save()
+
+        status_code = HTTPStatus.OK 
+        response = {
+            'status': True,
+            'status_code': status_code,
+            'message': 'comment add successfully.',
+            'data': {
+                'user': serializer.data,
+                'token': 'token',
+            }
+        }
+        return Response(response, status=status_code)
+
+
+class UserCommentAPI(generics.ListAPIView):
+    permissions_classes = [permissions.IsAuthenticated]
+    queryset = Comment.objects.all()
+    serializer_class = CommentDataserializers
+
+    def get(self, request, pk):
+
+        comment_obj = Comment.objects.filter(user = pk)
+        serializer = CommentDataserializers(comment_obj, many=True)
+
+        user_obj = UserDetail.objects.get(pk=pk)
+        userserializer = UserDeteilSerializers(user_obj)
+
+        status_code = HTTPStatus.OK
+        if user_obj.isDeleted == False:
+            response = {
+                'success': True,
+                'status_code': status_code,
+                'message': 'Comment Data fetched successfully',
+                'data': {"user":userserializer.data,
+                    "comments":serializer.data}
+            }
+        else:
+            status_code = HTTPStatus.BAD_REQUEST
+            response = {
+                'success': False,
+                'status_code': status_code,
+                'message': 'Enter a Velid Data',
+                'data': "User Not Found"
             }
         return Response(response, status=status_code)
 
@@ -197,8 +257,9 @@ class AccountDataApiView(generics.RetrieveAPIView):
         try:
             # pdb.set_trace()
             print(pk)
-            model = UserDetail.objects.get(pk=pk, isDeleted=False)
-            serializer = UserDeteilSerializers(model)
+            user_obj = UserDetail.objects.get(pk=pk, isDeleted=False)
+            serializer = UserDeteilSerializers(user_obj)
+
             # print(serializer.data)
 
             response = {
@@ -218,14 +279,13 @@ class AccountDataApiView(generics.RetrieveAPIView):
 
 # USER DELETE 
 class UserDeleteApi(generics.DestroyAPIView):
-    permissions_classes = [permissions.IsAuthenticated]
-    # authentication_classes = [JSONWebTokenAuthentication]
     queryset = UserDetail.objects.all()
     serializer_class = UserDeteilSerializers
 
     def delete(self, request, pk):
-        try:
+        # try:
             model = UserDetail.objects.get(userID=pk)
+            comment_obj = Comment.objects.filter(user = pk)
             if not model:
                 status_code = HTTPStatus.NOT_FOUND
                 response = {
@@ -236,22 +296,29 @@ class UserDeleteApi(generics.DestroyAPIView):
             else:
                 model.isDeleted = True
                 model.save()              
-
+                
+                # for object in comment_obj:
+                #     comment_obj.isDeleted == True
+                #     object.save()
+                
+                for comment in comment_obj:
+                    comment.isDeleted = True
+                    comment.save()
                 status_code = HTTPStatus.OK
                 response = {
                     'success': True,
                     "message": "User Data Deleted Successfully.",
                     "status_code": status_code,
                 }
-        except Exception as e:
-            status_code = HTTPStatus.OK
-            response = {
-                'success': False,
-                "message": "User Not Found",
-                "status_code": HTTPStatus.BAD_REQUEST,
-                "error": str(e)
-            }
-        return Response(response, status_code)
+        # except Exception as e:
+        #     status_code = HTTPStatus.OK
+        #     response = {
+        #         'success': False,
+        #         "message": "User Not Found",
+        #         "status_code": HTTPStatus.BAD_REQUEST,
+        #         "error": str(e)
+        #     }
+            return Response(response, status_code)
 
 #CHANGE PASSWORD 
 class ChangePasswordView(APIView):
@@ -632,4 +699,66 @@ class LoginValidateOTP(APIView):
                 'message': 'Please enter a valid OTP',
             }
             return Response(response, status_code)
+
+
+class TagDataApi(APIView):
+    permissions_classes = [permissions.IsAuthenticated]
+    queryset = tag.objects.all()
+    serializer_class = TagSerializer
+
+    def get(self, request, pk):
+        try:
+            tag_obj = tag.objects.filter(id = pk)
+            serializer = TagSerializer(tag_obj, many=True)
+            if tag_obj:
+                status_code = HTTPStatus.OK
+                response = {
+                    'success': True,
+                    'status_code': status_code,
+                    'message': 'Tag Data fetched successfully',
+                    'data': serializer.data
+                    }
+            else:
+                status_code = HTTPStatus.BAD_REQUEST
+                response = {
+                    'success': False,
+                    'status_code': status_code,
+                    'message': 'Enter a Velid Data',
+                    'data': "User Not Found"
+                }
+        except Exception as exc:
+            status_code = HTTPStatus.OK
+            response = {
+                'status': False,
+                'status_code': HTTPStatus.BAD_REQUEST,
+                'message': 'Please, enter valid data',
+                'error': str(exc),
+            }
+        return Response(response, status=status_code)
+
+
+class AddTagApi(generics.CreateAPIView):
+    permissions_classes = [permissions.IsAuthenticated]
+    queryset = tag.objects.all()
+    serializer_class = TagSerializer   
+    def post(self, request, *args, **kwargs):
+
+        import pdb
+        # pdb.set_trace()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # print(request.data.userID)
+        serializer.save()
+
+        status_code = HTTPStatus.OK 
+        response = {
+            'status': True,
+            'status_code': status_code,
+            'message': 'tag add successfully.',
+            'data': {
+                'user': serializer.data,
+                'token': 'token',
+            }
+        }
+        return Response(response, status=status_code)
 

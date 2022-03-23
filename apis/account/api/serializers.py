@@ -1,10 +1,16 @@
+from dataclasses import field
+from importlib.metadata import requires
+from pyexpat import model
+
 from rest_framework import serializers
-from apis.account.models import UserDetail
+from apis.account.models import *
 from django.contrib.auth import authenticate, get_user_model
 
-UserDetail = get_user_model()
+# UserDetail = get_user_model()
+
 
 class UserDeteilSerializers(serializers.ModelSerializer):
+    # comment = CommentDataserializers(many=True,read_only=True)
     class Meta:
         model = UserDetail
         fields = [
@@ -13,12 +19,24 @@ class UserDeteilSerializers(serializers.ModelSerializer):
             'username',   
             'first_name', 
             'last_name',  
-            'dob',        
+            'dob',
             'email',      
             'userphone',  
             'useraddress',
             'Image'
         ]
+
+class CommentDataserializers(serializers.ModelSerializer):
+    # user = UserDeteilSerializers(read_only=True)
+    class Meta:
+        model = Comment
+        fields = ["comment"]
+
+class AddCommentserializers(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ["comment","user"]
+
 
 class UserRegisterSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -34,23 +52,14 @@ class UserRegisterSerializer(serializers.HyperlinkedModelSerializer):
             'password',     
             'userphone',  
             'useraddress',
-            'Image'
+            'Image',
         ]
 
     def create(self, validated_data):
         
         password = validated_data.pop('password', None)
         user_obj = self.Meta.model(**validated_data)
-        # user_obj = UserDetail(
-        #     role=validated_data.get('role'),
-        #     username=validated_data.get('username'),
-        #     first_name=validated_data.get('first_name'),
-        #     last_name=validated_data.get('last_name'),
-        #     dob=validated_data.get('dob'),
-        #     email=validated_data.get('email'),
-        #     userphone=validated_data.get('userphone'),
-        #     useraddress=validated_data.get('useraddress'),   
-        # )
+       
         user_obj.set_password(password)
         # import pdb
         # pdb.set_trace()
@@ -101,7 +110,7 @@ class PictureSerialiser(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         return obj.image.url
-        
+
 
 class UserChangePasswordSerializer(serializers.ModelSerializer):
 
@@ -112,3 +121,13 @@ class UserChangePasswordSerializer(serializers.ModelSerializer):
             'userphone',
             'password',
         ]
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = tag
+        fields = ["id","tag","text"]
+
+class AddTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = tag
+        fields = ["tag","text"]

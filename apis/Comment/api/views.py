@@ -40,7 +40,7 @@ class CommentRegisterApi(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     # authentication_classes = [JSONWebTokenAuthentication]
     queryset = UserDetail.objects.all()
-    serializer_class = CommentSerializers
+    serializer_class = AddCommentSerializer
 
     def post(self, request, *args, **kwargs):
         try:
@@ -58,7 +58,7 @@ class CommentRegisterApi(generics.CreateAPIView):
                 'status_code': status_code,
                 'message': 'You are registered successfully.',
                 'data': {
-                    'user': CommentSerializers(user, context=self.get_serializer_context()).data,
+                    'user': serializer.data,
                     'token': 'token',
                 }
             }
@@ -72,5 +72,5 @@ class CommentRegisterApi(generics.CreateAPIView):
             }
         return Response(response, status=status_code)
 
-    def get_serializer_context(self, *args, **kwargs):
-        return {"request": self.request}
+    # def get_serializer_context(self, *args, **kwargs):
+    #     return {"request": self.request}
